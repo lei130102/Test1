@@ -31,6 +31,7 @@
 //然后保存退出vim
 //# pwd
 //查看到.vimrc文件位置，然后用我的_vimrc覆盖此文件
+//注意！！！不同电脑上用户很可能不同，拷贝msys64后需要再拷贝这个文件
 //)
 //(顺便提一下，控制台的设置为：locale:zh_CN   Character set:UTF-8)
 
@@ -68,6 +69,12 @@
 //# git config --global user.email "lei1301025@gmail.com"
 
 //(注意--global参数表示你这台机器上所有的Git仓库都会使用这个配置，当然你也可以对某个仓库指定的不同的用户名和邮箱)
+
+//Git 提供了一个叫做 git config 的工具，专门用来配置或读取相应的工作环境变量。
+//这些环境变量，决定了 Git 在各个环节的具体工作方式和行为。这些变量可以存放在以下三个不同的地方：
+///etc/gitconfig 文件：系统中对所有用户都普遍适用的配置。若使用 git config 时用 --system 选项，读写的就是这个文件。
+//~/.gitconfig 文件：用户目录下的配置文件只适用于该用户。若使用 git config 时用 --global 选项，读写的就是这个文件。
+//当前项目的 Git 目录中的配置文件（也就是工作目录中的 .git/config 文件）：这里的配置仅仅针对当前项目有效。每一个级别的配置都会覆盖上层的相同配置，所以 .git/config 里的配置会覆盖 /etc/gitconfig 中的同名变量。
 
 
 //(修复git中文乱码:   参考  http://howiefh.github.io/2014/10/11/git-encoding/
@@ -132,7 +139,7 @@
 //2.把版本库同目录下文件添加到版本库(仓库、Repository)，简称提交文件      首先要明确下，所有的版本控制系统，只能跟踪文本文件的改动，比如txt文件，网页，所有程序的代码等，Git也不列外，版本控制系统可以告诉你每次的改动，但是图片，视频这些二进制文件，虽能也能由版本控制系统管理，但没法跟踪文件的变化，只能把二进制文件每次改动串起来，也就是知道图片从1kb变成2kb，但是到底改了啥，版本控制也不知道
 //先将创建好的step.cpp文件添加到(add)暂存区(Index)(注意是暂存区(Index))，然后提交到(commit)版本库中
 
-//(没有任何提示，说明已经添加成功了，如果同时添加多个文件那么用空格隔开，比如git add step1.cpp step2.cpp)
+//(没有任何提示，说明已经添加成功了，如果同时添加多个文件那么用空格隔开，比如git add step1.cpp step2.cpp      可以使用 git add . 命令来添加当前项目的所有文件 )
 //# git add step.cpp
 //(参数-m表示后面跟提交注释)
 //# git commit -m "提交step.cpp文件"
@@ -172,6 +179,11 @@
 //@@ -1 +1 @@
 //-
 //+//添加一条注释^M
+
+//尚未缓存的改动：git diff
+//查看已缓存的改动： git diff --cached
+//查看已缓存的与未缓存的所有改动：git diff HEAD
+//显示摘要而非整个 diff：git diff --stat
 
 
 
@@ -593,6 +605,38 @@
 //把本地master分支的最新修改推送到github上了，现在你就拥有了真正的分布式版本库了。
 
 
+//git push的一般形式为 git push <远程主机名> <本地分支名>:<远程分支名> ，例如 git push origin master:refs/for/master ，即是将本地的master分支推送到远程主机origin上的对应master分支， origin 是远程主机名，第一个master是本地分支名，第二个master是远程分支名
+//形式1：
+//git push origin master   (注意这里的master指的本地分支)
+//如果远程分支被省略，如上则表示将本地分支推送到与之存在追踪关系的远程分支（通常两者同名），如果该远程分支不存在，则会被新建
+//形式2：
+//git push origin : refs/for/master
+//如果省略本地分支名，则表示删除指定的远程分支，因为这等同于推送一个空的本地分支到远程分支，等同于 git push origin --delete master
+//形式3：
+//git push origin
+//如果当前分支与远程分支存在追踪关系，则本地分支和远程分支都可以省略，将当前分支推送到origin主机的对应分支
+//形式4：
+//git push   (注意默认只推送当前分支，这叫做simple方式，还有一种matching方式，会推送所有有对应的远程分支的本地分支， Git 2.0之前默认使用matching，现在改为simple方式   如果想更改设置，可以使用git config命令。git config --global push.default matching OR git config --global push.default simple；可以使用git config -l 查看配置)
+//如果当前分支只有一个远程分支，那么主机名都可以省略，形如 git push，可以使用git branch -r ，查看远程的分支名
+//更多：
+//git push -u origin master  (注意这里的master指的远程分支)
+//如果当前分支与多个主机存在追踪关系，则可以使用 -u 参数指定一个默认主机，这样后面就可以不加任何参数使用git push
+//git push --all origin
+//当遇到这种情况就是不管是否存在对应的远程分支，将本地的所有分支都推送到远程主机，这时需要 -all 选项
+//git push --force origin
+//git push的时候需要本地先git pull更新到跟服务器版本一致，如果本地版本库比远程服务器上的低，那么一般会提示你git pull更新，如果一定要提交，那么可以使用这个命令
+//git push origin --tags
+//git push 的时候不会推送分支，如果一定要推送标签的话那么可以使用这个命令
+
+//关于 refs/for
+//refs/for 的意义在于我们提交代码到服务器之后是需要经过code review 之后才能进行merge的，而refs/heads 不需要
+
+
+//git pull的一般形式为 git pull <远程主机名> <远程分支名>:<本地分支名>    (注意跟git push正好是反的)
+//比如，要取回origin主机的next分支，与本地的master分支合并，需要写成下面这样
+//git pull origin next:master
+//如果远程分支(next)要与当前分支合并，则冒号后面的部分可以省略。上面命令可以简写为：
+//git pull origin next
 
 
 //如何从远程库克隆？
@@ -614,7 +658,7 @@
 
 //12.创建和合并分支
 //每次提交，git都把它们串成一条时间线，这条时间线就是一个分支。截止到目前，只有一条时间线，在git里，这个分支叫主分支，即master分支。
-//HEAD严格来说不是指向提交，而是指向master，master才是指向提交的，所以，HEAD指向的就是当前分支
+//HEAD严格来说不是指向提交，而是指向master分支，master分支才是指向提交的，所以，HEAD指向的就是当前分支
 
 //创建dev分支，然后切换到dev分支上
 //# cd D:/OtherDocuments/Test/GitTest/Test1
@@ -678,6 +722,18 @@
 //创建+切换分支：git checkout –b name
 //合并某分支到当前分支：git merge name
 //删除分支：git branch –d name
+
+//查看远程版本库分支列表：git branch -r
+//查看所有分支列表，包括本地和远程：git branch -a
+//可以查看本地分支对应的远程分支：git branch -vv
+//给分支重命名：git branch -m oldName newName
+
+//git checkout操作文件:
+//当执行 "git checkout ." 或者 "git checkout -- <file>" 命令时，会用暂存区全部或指定的文件替换工作区的文件。这个操作很危险，会清除工作区中未添加到暂存区的改动。
+//当执行 "git checkout HEAD ." 或者 "git checkout HEAD <file>" 命令时，会用 HEAD 指向的 master 分支中的全部或者部分文件替换暂存区和以及工作区中的文件。这个命令也是极具危险性的，因为不但会清除工作区中未提交的改动，也会清除暂存区中未提交的改动。
+
+//git checkout操作分支:
+//...
 
 
 
@@ -1004,6 +1060,8 @@
 //origin  https://github.com/lei130102/Test1.git (fetch)         抓取
 //origin  https://github.com/lei130102/Test1.git (push)          推送
 
+//删除本地指定的远程地址
+//git remote remove origin
 
 
 
@@ -1113,6 +1171,7 @@
 //# git commit -m "我进行了修改"
 //[dev f373463] 我进行了修改
 // 1 file changed, 1 insertion(+)
+//(实际应该每次git push前先git pull)
 //# git push origin dev                                 推送到远程库时发生错误，不同的人推同样的文件，修改同个文件同一个地方报错
 //Username for 'https://github.com':
 //Password for 'https://lei130102@github.com':
@@ -1192,6 +1251,70 @@
 //首先，可以试图用git push origin branch-name推送自己的修改.
 //如果推送失败，则因为远程分支比你的本地更新早，需要先用git pull试图合并。
 //如果合并有冲突，则需要解决冲突，并在本地提交。再用git push origin branch-name推送
+
+
+
+//git拉取远程代码
+//git clone  https://xxx.git
+//git拉取远程指定分支下代码（-b  分支名称）
+//git clone -b name https://xxx.git
+
+
+
+//(下面的步骤可能有问题)
+//如果我们不小心提交了一版我们不满意的代码，并且给它推送(push)到服务器了，在代码没被merge之前我们希望再修改一版满意的，而如果我们不想在服务器上抛弃(abondon)，那么我们怎么做呢？
+//git commit --amend
+//也叫追加提交，它可以在不增加一个新的commit-id的情况下将新修改的代码追加到前一次的commit-id中
+//a.假如现在版本库里最近的一版正是我们想要追加进去的那版，此时是最简单的，直接修改工作区代码，然后git add，再执行git commit --amend命令，之后就可以直接进行git push到服务器，
+//中间不需要进行其他的操作如git pull等
+//b. 如果现在版本库里最近的一版不是我们想要追加进去的那版，那么此时我们需要将版本库里的版本回退到我们想要追加的那一版，想要将版本回退到我们想要的哪一版有好几种方法
+//b1.第一种即是我们从服务器上选取我们需要的版本，直接进行挑拣，在服务器的提交管理页面上右上方一般会有一个Download按钮，点击会弹出一个下拉框，选择其中的cherry-pick，复制命令，
+//之后在我们版本仓库对应的目录下运行这个命令，执行完后，使用git log -1 命令，可以查看到现在版本库里最近的一版变成了我们刚才挑拣的这版，此时再在工作区直接修改代码，改完之后进行
+//git add，再执行git commit --amend命令，之后git push
+//b2.用gitk或其他的图形界面化工具，在终端输入 gitk，回车，会弹出gitk的图形界面，在界面的左侧部分陈列着版本库中的一条条commit-id，此时选中我们需要的那一版，右键点击之后会弹出
+//一个选择菜单，如果是在master  分支上，那么其中会有一项是 Reset master branch to here，点击这项，会弹出一个名为confirm reset的确认box，选择reset type 中的hard项，再
+//点击OK，关闭gitk图形界面，回到终端，运行git log -1命令，发现现在版本库里最近的一次提交已经是我们希望的那一版了，此时再在工作区直接修改代码，改完之后进行git add，再执行
+//git commit --amend命令，之后git push
+//b3.如果我们知道我们需要的版本与现在最近的版本中间隔着 n 个提交，那么我们可以直接使用git reset --hard HEAD～n命令，关于git reset 命令有详解，此时这个命令执行完后，运行
+//git log -1 命令我们会发现现在版本库里最近的一版就是我们需要的那版，此时再在工作区直接修改代码，改完之后进行git add，再执行本git commit --amend命令，之后git push.
+//b4.如果我们不知道我们需要的版本与现在最近的版本中间隔着 n 个提交，那么我们可以使用git log来查看版本库中的commit-id，找到我们需要的commit-id后，在终端中执行
+//git reset --hard commit-id，时这个命令执行完后，运行git log -1 命令我们会发现现在版本库里最近的一版就是我们需要的那版，此时再在工作区直接修改代码，改完之后进行git add，
+//再执行本git commit --amend命令，之后git push.
+
+
+
+//git mv
+//git mv 命令用于移动或重命名一个文件、目录、软连接。
+
+
+//如果你达到一个重要的阶段，并希望永远记住那个特别的提交快照，你可以使用 git tag 给它打上标签。
+//比如说，我们想为我们的 runoob 项目发布一个"1.0"版本。 我们可以用 git tag -a v1.0 命令给最新一次提交打上（HEAD）"v1.0"的标签。
+//-a 选项意为"创建一个带注解的标签"。 不用 -a 选项也可以执行的，但它不会记录这标签是啥时候打的，谁打的，也不会让你添加个标签的注解。 我推荐一直创建带注解的标签。
+////创建标签
+//git tag -a v1.0
+
+//当你执行 git tag -a 命令时，Git 会打开你的编辑器，让你写一句标签注解，就像你给提交写注解一样。
+
+//如果我们忘了给某个提交打标签，又将它发布了，我们可以给它追加标签。
+//例如，假设我们发布了提交 85fc7e7(上面实例最后一行)，但是那时候忘了给它打标签。 我们现在也可以：
+////假设我们发布了提交 85fc7e7(上面实例最后一行)，但是那时候忘了给它打标签
+//git tag -a v0.9 85fc7e7
+
+
+//查看已有标签
+//git tag
+//删除标签
+//git tag -d v1.1
+//查看此版本所修改的内容
+//git show v1.0
+
+
+
+
+
+
+
+
 
 
 
